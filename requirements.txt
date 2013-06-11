@@ -1,0 +1,8 @@
+Jinja2==2.7
+MarkupSafe==0.18
+Pygments==1.6
+Sphinx==1.2b1
+distribute==0.6.31
+docutils==0.10
+greenlet==0.4.1
+wsgiref==0.1.2

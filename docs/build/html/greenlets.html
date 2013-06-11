@@ -1,0 +1,208 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>What are greenlets? &mdash; PyconSG 2013 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="PyconSG 2013 0.1.0 documentation" href="index.html" />
+    <link rel="prev" title="What are threads?" href="threads.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="threads.html" title="What are threads?"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">PyconSG 2013 0.1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="what-are-greenlets">
+<h1>What are greenlets?<a class="headerlink" href="#what-are-greenlets" title="Permalink to this headline">¶</a></h1>
+<p>Greenlets are lightweight thread-like structures that are scheduled and managed inside the process. They are references to the part of the stack that is used by the thread.  Compared to POSIX threads (pthreads), there is no stack allocated up front and there is only as much stack as is actually used by the greenlet</p>
+<p>In python, we implement greenlets via the gevent package and we implement pthreads via python&#8217;s built-in threading module.</p>
+<p>Both green threads (greenlets) and POSIX threads (pthreads) are mechanisms to support multithreaded execution of programs.</p>
+<p>POSIX threads use the operating system&#8217;s native ability to manage multithreaded processes.  When we run pthreads, the kernel schedules and manages the various threads that make up the process.</p>
+<p>Green threads emulate multithreaded environments without relying on any native operating system capabilities. Green threads run code in user space that manages and schedules threads.</p>
+<p>The key differences between greenlets and pthreads can be summarized as such:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="53%" />
+<col width="47%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">pthreads</th>
+<th class="head">greenlets</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>pthreads can switch between threads pre-emptively, switching control
+from a running thread to a non-running thread at any time</td>
+<td>greenlets only switch when control is explicitly given up by
+a thread - when using yield() or wait() - or when a thread
+performs a I/O blocking operation such as read or write</td>
+</tr>
+<tr class="row-odd"><td>On multicore machines, pthreads can run more than one thread. However
+python&#8217;s Global Interpreter Lock (CPython Intepreter) prevents
+parallelism and concurrency is only effective for I/O-bound programs</td>
+<td>greenlets can only run on one single CPU and is useful for
+I/O-bound programs</td>
+</tr>
+<tr class="row-even"><td>Race conditions can occur when implementing multi-threading code.
+Use locks to manage mutex to avoid race conditions.</td>
+<td>There&#8217;s no possibility of two threads of control accessing
+the same shared memory at the same time for greenlets so
+there will not be any race conditions.</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>When we install gevent, greenlet as a dependency will be downloaded, compiled (since it is a c extension) and installed.</p>
+<p>We can also install greenlet directly:</p>
+<blockquote>
+<div><div class="code sh highlight-python"><pre>pip install greenlet
+
+Downloading/unpacking greenlet
+  Downloading greenlet-0.4.1.zip (75kB): 75kB downloaded
+  Running setup.py egg_info for package greenlet
+
+Installing collected packages: greenlet
+  Running setup.py install for greenlet
+    /usr/bin/clang -fno-strict-aliasing -fno-common -dynamic -pipe -O2 -fwrapv -arch x86_64 -DNDEBUG -g -fwrapv -O3 -Wall -Wstrict-prototypes -fno-tree-dominator-opts -I/opt/local/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7 -c /var/folders/kl/_52jng9s6sl2knv_0jds9w140000gn/T/tmp15ttlr/simple.c -o /var/folders/kl/_52jng9s6sl2knv_0jds9w140000gn/T/tmp15ttlr/var/folders/kl/_52jng9s6sl2knv_0jds9w140000gn/T/tmp15ttlr/simple.o
+    clang: warning: argument unused during compilation: '-fno-tree-dominator-opts'
+    building 'greenlet' extension
+    /usr/bin/clang -fno-strict-aliasing -fno-common -dynamic -pipe -O2 -fwrapv -arch x86_64 -DNDEBUG -g -fwrapv -O3 -Wall -Wstrict-prototypes -fno-tree-dominator-opts -I/opt/local/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7 -c greenlet.c -o build/temp.macosx-10.7-x86_64-2.7/greenlet.o
+    clang: warning: argument unused during compilation: '-fno-tree-dominator-opts'
+    In file included from greenlet.c:416:
+    In file included from ./slp_platformselect.h:12:
+    ./platform/switch_amd64_unix.h:40:26: warning: unknown attribute 'noclone' ignored [-Wattributes]
+    __attribute__((noinline, noclone)) int fancy_return_zero(void);
+                             ^
+    ./platform/switch_amd64_unix.h:41:26: warning: unknown attribute 'noclone' ignored [-Wattributes]
+    __attribute__((noinline, noclone)) int
+                             ^
+    2 warnings generated.
+    /usr/bin/clang -bundle -undefined dynamic_lookup -L/opt/local/lib -L/opt/local/lib/db46 -arch x86_64 build/temp.macosx-10.7-x86_64-2.7/greenlet.o -o build/lib.macosx-10.7-x86_64-2.7/greenlet.so
+    Linking /Users/calvin/.virtualenvs/pyconsg2013/build/greenlet/build/lib.macosx-10.7-x86_64-2.7/greenlet.so to /Users/calvin/.virtualenvs/pyconsg2013/build/greenlet/greenlet.so
+
+Successfully installed greenlet
+Cleaning up...</pre>
+</div>
+</div></blockquote>
+<p>Notice that the c code gets built and the shared object file <cite>greenlet.so</cite> is now available for us to import inside our python code.</p>
+</div>
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<p>Here&#8217;s a simple example extracted from greenlet docs that explains the nature of greenlet execution:</p>
+<blockquote>
+<div><div class="code python highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">greenlet</span> <span class="kn">import</span> <span class="n">greenlet</span>
+
+
+<span class="k">def</span> <span class="nf">test1</span><span class="p">():</span>
+    <span class="k">print</span> <span class="mi">12</span>
+    <span class="n">gr2</span><span class="o">.</span><span class="n">switch</span><span class="p">()</span>
+    <span class="k">print</span> <span class="mi">34</span>
+
+
+<span class="k">def</span> <span class="nf">test2</span><span class="p">():</span>
+    <span class="k">print</span> <span class="mi">56</span>
+    <span class="n">gr1</span><span class="o">.</span><span class="n">switch</span><span class="p">()</span>
+    <span class="k">print</span> <span class="mi">78</span>
+
+<span class="n">gr1</span> <span class="o">=</span> <span class="n">greenlet</span><span class="p">(</span><span class="n">test1</span><span class="p">)</span>
+<span class="n">gr2</span> <span class="o">=</span> <span class="n">greenlet</span><span class="p">(</span><span class="n">test2</span><span class="p">)</span>
+<span class="n">gr1</span><span class="o">.</span><span class="n">switch</span><span class="p">()</span>
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">What are greenlets?</a><ul>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="threads.html"
+                        title="previous chapter">What are threads?</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/greenlets.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="threads.html" title="What are threads?"
+             >previous</a> |</li>
+        <li><a href="index.html">PyconSG 2013 0.1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Calvin Cheng.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>
