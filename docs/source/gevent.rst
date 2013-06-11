@@ -100,6 +100,8 @@ gevent's interface follows the conventions set by python standard modules
 
 Having consistent code interfaces like these helps programmers read and reason with the code in a much more efficient manner.
 
+.. _gevent-python-extensions:
+
 gevent with other python extensions
 ---------------------------------------
 
@@ -149,3 +151,58 @@ However, because of `gevent.monkey.patch_thread()`, the ID of the main thread is
 
 Long story short, the `order in which we monkey patch gevent is important`.  Always execute the monkey patch first before running your python code, particularly if your code uses threading at some point.  Note that the `logging` module also uses `threading` so when `logging` your application, monkey patch first! 
 
+gevent with webservers
+--------------------------
+
+Most web application accept requests via http.  Since gevent allows us to work seamlessly with python's socket APIs, there will be no blocking call.  However, as mentioned above in :ref:`gevent-python-extensions`, be careful when adding dependencies with C-Extensions that might circumvent python sockets.
+
+gevent with databases
+--------------------------
+
+Our python application typically sits between a webserver (as mentioned above) and a database. Now that we are sure that our gevent-powered python app is not affected by code or dependencies with C-Extensions that circumvent python sockets, we want to be sure that we are using the appropriate database drivers.
+
+Database drivers that work with python gevent apps are:
+
+* mysql-connector
+* pymongo
+* redis-py
+* psycopg
+
+We cannot use the standard MySQLdb driver because it is C-based.
+
+How we design our database-connection depends on how our http-interface works. If we use `greenlet-pool` for example, it spawns a new greenlet per request.  On the database side, for `redis-py`, every `redis.Connection` instance has one socket attached to it. The `redis-client` uses a pool of these connections.  Every command gets a connection from the pool and releases it afterwards. This is a good design pattern for use with gevent because we cannot afford to create one connection per greenlet - since databases often handle every established connection with a thread, this can cause our machine to run out of resources on the database side very quickly!
+
+Using a single connection on the other hand, will create a huge bottleneck.  Connection pools witha limited number of connections can hinder performance so on a production application, we will need to carefully decide on the connection limit as our app usage pattern evolves.
+
+pymongo can ensure that it uses one connection for one greenlet through its whole lifetime so we have read-write consistency.
+
+gevent with I/O operations
+---------------------------------
+
+Because of GIL, python threads are **not parallel** (at least in the CPython implementation).  gevent's greenlet does not give us magical powers to suddenly achieve parallism.  There will only be one greenlet running in a particular process at any time. Because of this, CPU-bound apps do not gain any performance gain from using gevent (or python's standard threading). 
+
+gevent is only useful for solving I/O bottlenecks.  Because our gevent python application is trapped between a http connection, a database and perhaps a cache and/or messaging server, gevent is useful for us.
+
+Exceptions to I/O operations advantage
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+However (well, you know that was coming right? :-)), gevent does not handle regular file read-write (I/O) well.
+
+`POSIX` says:
+
+    File descriptors associated with regular files shall always select true for ready to read, ready to write, and error conditions.
+    the linux read man-page says:
+
+    Many file systems and disks were considered to be fast enough that the implementation of O_NONBLOCK was deemed unnecessary. So, O_NONBLOCK may not be available on files and/or disks.
+
+The `libev-documentation` says:
+
+    [...] you get a readiness notification as soon as the kernel knows whether and how much data is there, and in the case of open files, that’s always the case, so you always get a readiness notification instantly, and your read (or possibly write) will still block on the disk I/O.
+
+File I/O does not really work the asynchronous way. It blocks! Expect your application to block on file I/O, so load every file you need up front before handling requests or do file-I/O in a separate process (Pipes support non-blocking I/O).
+
+Summary
+-------------
+
+* gevent helps us to reduce the overheads associated with threading to a minium. (greenlets)
+* gevent helps us avoid resource wastage during I/O by using asynchronous, event-based I/O. (libevent/libev depending on which version of gevent we use)
