@@ -110,8 +110,6 @@ gevent's monkey patch
 
 A monkey patch is a way to extend or modify the run-time code of dynamic languages without altering the original source code.  Monkey patching as a programming technique is very powerful but can result in hard-to-debug code in the wrong hands.  Jeff Atwood wrote a good post about these issues here - http://www.codinghorror.com/blog/2008/07/monkeypatching-for-humans.html. 
 
-    ::
-
     Monkey patching is the new black [in the Ruby community]. It's what all the hip kids are doing. To the point that smart, experienced hackers reach for a monkey patch as their tool of first resort, even when a simpler, more traditional solution is possible.
 
     I don't believe this situation to be sustainable. Where I work, we are already seeing subtle, difficult-to-debug problems crop up as the result of monkey patching in plugins. Patches interact in unpredictable, combinatoric ways. And by their nature, bugs caused by monkey patches are more difficult to track down than those introduced by more traditional classes and methods. As just one example: on one project, it was a known caveat that we could not rely on class inheritable attributes as provided by ActiveSupport. No one knew why. Every Model we wrote had to use awkward workarounds. Eventually we tracked it down in a plugin that generated admin consoles. It was overwriting Class.inherited(). It took us months to find this out.
