@@ -179,7 +179,7 @@ pymongo can ensure that it uses one connection for one greenlet through its whol
 gevent with I/O operations
 ---------------------------------
 
-Because of GIL, python threads are **not parallel** (at least in the CPython implementation).  gevent's greenlet does not give us magical powers to suddenly achieve parallism.  There will only be one greenlet running in a particular process at any time. Because of this, CPU-bound apps do not gain any performance gain from using gevent (or python's standard threading). 
+Because of GIL, python threads are **not parallel** (at least in the CPython implementation).  gevent's greenlet does not give us magical powers to suddenly achieve parallelism.  There will only be one greenlet running in a particular process at any time. Because of this, CPU-bound apps do not gain any performance gain from using gevent (or python's standard threading). 
 
 gevent is only useful for solving I/O bottlenecks.  Because our gevent python application is trapped between a http connection, a database and perhaps a cache and/or messaging server, gevent is useful for us.
 
@@ -199,10 +199,14 @@ The `libev-documentation` says:
 
     [...] you get a readiness notification as soon as the kernel knows whether and how much data is there, and in the case of open files, that’s always the case, so you always get a readiness notification instantly, and your read (or possibly write) will still block on the disk I/O.
 
-File I/O does not really work the asynchronous way. It blocks! Expect your application to block on file I/O, so load every file you need up front before handling requests or do file-I/O in a separate process (Pipes support non-blocking I/O).
+File I/O does not really work the asynchronous way. It blocks! Expect your application to block on file I/O, so load every file you need up front before handling requests or do file I/O in a separate process (Pipes support non-blocking I/O).
 
 Summary
 -------------
 
 * gevent helps us to reduce the overheads associated with threading to a minium. (greenlets)
 * gevent helps us avoid resource wastage during I/O by using asynchronous, event-based I/O. (libevent/libev depending on which version of gevent we use)
+* gevent is exceptionally suited for concurrency implementation with webservers, databases, caches and messaging frameworks because these are I/O-bound operations
+* The exception to I/O performance gain is file I/O. To deal with that, load file upfront or execute file I/O in a separate process
+* gevent is not a solution for multicore CPU-bound programs
+*  
