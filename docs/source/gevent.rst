@@ -208,5 +208,4 @@ Summary
 * gevent helps us avoid resource wastage during I/O by using asynchronous, event-based I/O. (libevent/libev depending on which version of gevent we use)
 * gevent is exceptionally suited for concurrency implementation with webservers, databases, caches and messaging frameworks because these are I/O-bound operations
 * The exception to I/O performance gain is file I/O. To deal with that, load file upfront or execute file I/O in a separate process
-* gevent is not a solution for multicore CPU-bound programs
-*  
+* gevent is not a solution for multicore CPU-bound programs. To deal with that, delegate your CPU-intensive code to a queue or to another program and return the results from a message queue.
