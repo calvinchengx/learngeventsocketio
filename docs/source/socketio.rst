@@ -200,6 +200,8 @@ In this example, the `user_msg` event will be in the `/chat` namespace. So we ca
 
 `socketio_manage()` is the method that runs when the `SocketIOServer` gets started and the real-time communication between the client and the server happens through that method.
 
+The `socketio_manage()` function is going to be called only once per socket opening, even though we are using a long polling mechanism. The subsequent calls (for long polling) will be hooked directly at the server-level, to interact with the active Socket instance. This means we will not get access to the future request or environ objects. This is of particular importance regarding sessions. The session will be opened once at the opening of the Socket, and not closed until the socket is closed. We are responsible for opening and closing the cookie-based session ourselves if we want to keep its data in sync with the rest of our GET/POST calls.
+
 A slightly more complex `django` example here`:
 
 .. code:: python
@@ -259,4 +261,180 @@ The `sdjango` module has defined a nice namespace class which accepts the name o
     var socket = io.connect("/chat");`
 
 , the `io.connect("/chat")` call.
+
+Summary of gevent-socketio API 
+-----------------------------------
+
+
+The key concepts and usage that we have covered are:
+
+* **socketio.socketio_manage**  (usage seen in the `sdjango.py` module)
+* **socketio.namespace**        (usage seen in by the implementation of the `BaseNamespace` parent class and the `@namespace` decorator in django)
+* **socketio.server**           (usage seen in the instantiation of a `SocketIOServer` instance)
+
+In the django example above, we also notice the use of **socketio.mixins** to pass in (specifically `RoomsMixin` and `BroadcastMixin`) pre-written classes that contain methods useful for a typical chat project.
+
+Other APIs include:
+
+* **socketio.virtsocket**
+* **socketio.packet**
+* **socketio.handler**
+* **socketio.transports**
+
+Reference document - https://gevent-socketio.readthedocs.org/en/latest/#api-docs
+
+From SocketIO client to SocketIOServer logic and back
+---------------------------------------------------------
+
+Here's an example django *chat* app layout (inside a django project):
+
+.. code::
+
+    chat
+    ├── __init__.py
+    ├── admin.py
+    ├── management
+    │   ├── __init__.py
+    │   └── commands
+    │       ├── __init__.py
+    │       ├── runserver_socketio.py
+    ├── models.py
+    ├── sockets.py
+    ├── static
+    │   ├── css
+    │   │   └── chat.css
+    │   ├── flashsocket
+    │   │   └── WebSocketMain.swf
+    │   └── js
+    │       ├── chat.js
+    │       └── socket.io.js
+    ├── templates
+    │   ├── base.html
+    │   ├── room.html
+    │   └── rooms.html
+    ├── tests.py
+    ├── urls.py
+    └── views.py
+
+Our client-side logic resides in `chat.js`
+
+.. code:: javascript
+
+    // chat.js
+
+    var socket = io.connect("/chat");
+
+    socket.on('connect', function () {
+        $('#chat').addClass('connected');
+        socket.emit('join', window.room); 
+    });
+
+    socket.on('announcement', function (msg) {
+        $('#lines').append($('<p>').append($('<em>').text(msg)));
+    });
+
+    socket.on('nicknames', function (nicknames) {
+        console.log("nicknames: " + nicknames);
+        $('#nicknames').empty().append($('<span>Online: </span>'));
+        for (var i in nicknames) {
+            $('#nicknames').append($('<b>').text(nicknames[i]));
+        }
+    });
+
+    socket.on('msg_to_room', message);
+
+    socket.on('reconnect', function () {
+        $('#lines').remove();
+        message('System', 'Reconnected to the server');
+    });
+
+    socket.on('reconnecting', function () {
+        message('System', 'Attempting to re-connect to the server');
+    });
+
+    socket.on('error', function (e) {
+        message('System', e ? e : 'A unknown error occurred');
+    });
+
+    function message (from, msg) {
+        $('#lines').append($('<p>').append($('<b>').text(from), msg));
+    }
+
+    // DOM manipulation
+    $(function () {
+        $('#set-nickname').submit(function (ev) {
+            socket.emit('nickname', $('#nick').val(), function (set) {
+                if (set) {
+                    clear();
+                    return $('#chat').addClass('nickname-set');
+                }
+                $('#nickname-err').css('visibility', 'visible');
+            });
+            return false;
+        });
+
+        $('#send-message').submit(function () {
+            //message('me', "Fake it first: " + $('#message').val());
+            socket.emit('user message', $('#message').val());
+            clear();
+            $('#lines').get(0).scrollTop = 10000000;
+            return false;
+        });
+
+        function clear () {
+            $('#message').val('').focus();
+        }
+    });
+
+The client side SocketIO library is straightforward to use: 
+
+* **socket.on** receives 2 arguments, the *event_name* (which the server side code will emit to) as the first argument and the *event callback function* as the second argument.  When an event happens, the (callback) function gets triggered.
+* **socket.emit** also receives 2 arguments, the first being the *event_name* and the 2nd being the *message*.  **emit('<event_name>', <message>)** sends a message to the server - the python method **on_<event_name>(<message>)** is waiting for the client side **emit()** call.
+
+Here's the corresponding server-side code in our **ChatNamespace** class.
+
+.. code:: python
+
+    # sockets.py
+
+    @namespace('/chat')
+    class ChatNamespace(BaseNamespace, LonelyRoomMixin, BroadcastMixin):
+        nicknames = []
+
+        def initialize(self):
+            self.logger = logging.getLogger("socketio.chat")
+            self.log("Socketio session started")
+
+        def log(self, message):
+            self.logger.info("[{0}] {1}".format(self.socket.sessid, message))
+
+        def on_join(self, room):
+            self.room = room
+            self.join(room)
+            return True
+
+        def on_nickname(self, nickname):
+            print("Creating the nickname: " + nickname)
+            self.log('Nickname: {0}'.format(nickname))
+            self.socket.session['nickname'] = nickname
+            self.nicknames.append(nickname)
+            self.broadcast_event('announcement', '%s has connected' % nickname)
+            self.broadcast_event('nicknames', self.nicknames)
+            return True, nickname
+
+        def recv_disconnect(self):
+            self.log('Disconnected')
+            nickname = self.socket.session['nickname']
+            self.nicknames.remove(nickname)
+            self.broadcast_event('announcement', '%s has disconnected' % nickname)
+            self.broadcast_event('nicknames', self.nicknames)
+            self.disconnect(silent=True)
+            return True
+
+        def on_user_message(self, msg):
+            self.log('User message: {0}'.format(msg))
+            # TODO: dig into the logic of emit_to_room
+            self.emit_to_room(self.room, 'msg_to_room',
+                              self.socket.session['nickname'], msg)
+            return True
 
