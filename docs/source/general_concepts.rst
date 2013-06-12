@@ -1,5 +1,5 @@
-General concepts
-=====================
+General concepts: concurrency, parallelism, threads and processes
+====================================================================
 
 In this section, we want to set the fundamentals knowledge required to understand how greenlets, pthreads (python threading for multithreading) and processes (python's multiprocessing) module work, so we can better understand the details involved in implementing python gevent.
 

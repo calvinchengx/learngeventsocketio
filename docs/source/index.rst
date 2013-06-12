@@ -15,8 +15,8 @@ Contents:
    gevent
    greenlets
    greenlets_via_gevent
-   socketio
    sockets
+   socketio
    gevent_socketio_example
 
 Indices and tables

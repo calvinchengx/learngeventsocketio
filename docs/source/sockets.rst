@@ -1,5 +1,5 @@
-What are sockets?
-=======================
+General concepts: what are sockets?
+======================================
 
 Written in C, Berkeley sockets (BSD sockets) is a computing library with an API for internet sockets and other unix domain sockets used for inter-process communication.  The API has not changed much in its POSIX equivalent, so POSIX sockets are basically Berkeley sockets.
 
