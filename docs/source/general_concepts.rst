@@ -3,7 +3,7 @@ General Concepts
 
 In this section, we want to set the fundamentals knowledge required to understand how greenlets, pthreads (python threading for multithreading) and processes (python's multiprocessing) module work, so we can better understand the details involved in implementing python gevent.
 
-What's the difference betweeen concurrency and parallelism?
+What's the difference between concurrency and parallelism?
 --------------------------------------------------------------
 
 When we talk about implementing threads (whether greenlets or pthreads) and processes, what we are really trying to achieve is concurrency and/or parallelism.
@@ -95,6 +95,15 @@ Actually, we can. But not using threads.
 Using the threading module on standard python (CPython interpreter), we **cannot** execute parallel CPU computation and we cannot execute parallel I/O operation because of GIL.  The threading module is *still useful* for implementing I/O concurrency (e.g. webserver implementation) but causes more harm than good for CPU-intensive operations.
 
 However, we **can** execute parallel CPU computation and parallel I/O operation in python with python's multiprocessing module, or subprocess module or a 3rd party library called parallel python - http://www.parallelpython.com/.  Each approach has its own features and limitations but note that none of them use threads to achieve parallelism.
+
+Advanced distributed, parallel computing with python
+----------------------------------------------------------
+
+Beyond some of the solutions offered in the previous paragraph, large scale data processing tools include discoproject (python with erlang and includes map/reduce capabilities) and PySpark on top of the spark framework (scala based).
+
+For data analysis which can become compute-intensive, augustus is an open source system for building and scoring scalable data mining and statistical algorithms.
+
+For GPU computing, numbapro and pycuda are the emerging players.
 
 Useful references
 ~~~~~~~~~~~~~~~~~~~~~~~~

@@ -6,5 +6,8 @@ Sphinx==1.2b1
 distribute==0.6.31
 docutils==0.10
 -e git://github.com/surfly/gevent.git@7d142d197eb72beec89fba3f805e70cf8705c0af#egg=gevent-dev
+-e git://github.com/abourget/gevent-socketio.git@aeece7038b0052ddf6b4228857e4d7a67a6242f2#egg=gevent_socketio-dev
+gevent-websocket==0.3.6
 greenlet==0.4.1
+ipython==0.13.2
 wsgiref==0.1.2
