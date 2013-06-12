@@ -1,4 +1,4 @@
-What is socketio?
+What is Socket.IO?
 =======================
 
 Socket.IO is a javascript library for real-time web applications.  It has two parts 
@@ -55,6 +55,4 @@ Various Language Implementations
 
   + Socket.IO-Erlang (supports up to socket.io client 0.6) -    https://github.com/yrashk/socket.io-erlang
   + erlang Socket.IO (supports up to socket.io client 1.0) -    https://code.google.com/p/erlang-scoketio
-
-
 

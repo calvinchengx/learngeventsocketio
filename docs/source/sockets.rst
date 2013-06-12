@@ -60,7 +60,7 @@ Our webservers can be implemented in python or C or golang or any other language
 DNS, DHCP, TFTP, SNMP, RIP, VOIP protocols are UDP protocols but they too are built on top of sockets.
 
 
-So what's WebSocket?
+So what's a WebSocket?
 ----------------------------
 
 WebSocket is a full-duplex communication channel over one single TCP-type connection. It is an independent TCP-type protocol and its only association to HTTP is that its handshake is intepreted by HTTP servers as an Upgrade request. HTTP 1.1 introduced an "Upgrade" header field and this connection "Upgrade" must be sent by the client (in other words, this "Upgrade" header is sent by SocketIO javascript client to tell the server that this is a WebSocket connection).  The server can also enforce an upgrade by sending a "426 upgrade required" response back to the client and the client will have to handle this response accordingly - either upgrade or fail the websocket connection attempt.
