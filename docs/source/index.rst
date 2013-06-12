@@ -12,8 +12,10 @@ Contents:
    :maxdepth: 2
 
    gevent
-   threads
+   general_concepts
    greenlets
+   socketio
+   sockets
 
 Indices and tables
 ==================

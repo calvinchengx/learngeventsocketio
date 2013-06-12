@@ -9,12 +9,18 @@ from greenlet import greenlet
 
 
 def test1():
+    """
+    prints out specific numbers and switch to another greenlet
+    """
     print 12
     gr2.switch()
     print 34
 
 
 def test2():
+    """
+    prints out specific numbers and switch to another greenlet
+    """
     print 56
     gr1.switch()
     print 78
