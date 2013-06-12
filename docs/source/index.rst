@@ -11,9 +11,10 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   gevent
    general_concepts
+   gevent
    greenlets
+   greenlets_via_gevent
    socketio
    sockets
    gevent_socketio_example

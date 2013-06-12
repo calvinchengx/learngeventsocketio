@@ -1,4 +1,4 @@
-General Concepts
+General concepts
 =====================
 
 In this section, we want to set the fundamentals knowledge required to understand how greenlets, pthreads (python threading for multithreading) and processes (python's multiprocessing) module work, so we can better understand the details involved in implementing python gevent.
@@ -11,6 +11,8 @@ When we talk about implementing threads (whether greenlets or pthreads) and proc
 So what's the difference, you ask?
 
 Concurrency and parallelism are distinct concepts. Concurrency is concerned with managing access to shared state from different threads, whereas parallelism is concerned with utilizing multiple processors/cores to improve the performance of a computation.
+
+.. _threads-label:
 
 What is a thread?
 ------------------------
@@ -34,6 +36,7 @@ A thread shares resources with its peer threads (all other threads in a particul
 
 In a multi-threaded task, one server thread may be blocked and waiting for something and another thread in the same task may be running.  If a process blocks, then the whole process stops.  But a multithreaded process is useful in programs such as web browsers when we want to download a file, view an animation and print something all at the same time.  When multiple threads cooperate in a single job, there is a higher throughput.  If one thread must wait, the whole process does not stop because another thread may still run.
 
+.. _processes-label:
 
 What is a process?
 -------------------------

@@ -5,6 +5,10 @@ Gevent is the use of simple, sequential programming in python to achieve scalabi
 
 It is built on top of libevent/libev (for asynchronous I/O) and :doc:`greenlets <greenlets>` (lightweight cooperative multi-threading).
 
+The job of libevent/libev is to handle event loops. As we will learn in the SocketIO sections later on, our SocketIOServer is an event loop which can `emit` specific results, `on` the occurrence of specific events.  This is essentially how our SocketIOServer instance will know when to send a message to the client, hence real-time streaming of data from the server to the client, `on` the occurrence of specific events.
+
+As we have understood from :doc:`general concepts <general_concepts>` relating to :ref:`processes <processes-label>` and :ref:`threads (pthreads) <threads-label>` and concurrency and parallelism in the previous section, we want to be able to handle concurrency in python (for I/O benefits) and this is where :doc:`greenlets <greenlets>` fits into the picture.
+
 Pre-1.0 version, gevent is based on `libevent <http://libevent.org>`_; and from 1.0 onwards, gevent is based on `libev <http://libev.schmorp.de>`_.
 
 Once we understand what each of the building blocks of gevent do - 
