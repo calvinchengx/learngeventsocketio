@@ -205,6 +205,31 @@ The `libev-documentation` says:
 
 File I/O does not really work the asynchronous way. It blocks! Expect your application to block on file I/O, so load every file you need up front before handling requests or do file I/O in a separate process (Pipes support non-blocking I/O).
 
+gevent code example
+---------------------------
+
+Here's a simple example of how we can make use of gevent's I/O performance advantage in our code.  In a typical web request-respond cycle, we may want to run concurrent jobs that 
+
+* retrieve data source from a particular database, 
+* make a get request to a 3rd party (or even in-house) API on a different application that returns us json, 
+* instantiates an SMTP connection to send out an email,
+* or more
+
+We can of course execute these tasks one-by-one, in a sequential manner.  But being the experts that we are, we would like to execute them in a concurrent way (where the tasks will switch away if it encounters an I/O bottleneck in one of the above I/O jobs).
+
+So we can write:-
+
+.. code:: python
+
+    def handle_view(request):
+        jobs = []
+        jobs.append(gevent.spawn(orm_call, 'Andy'))
+        jobs.append(gevent.spawn(call_facebook_graph_api, 14213))
+        jobs.append(gevent.spawn(email, 'me@mysite.com'))
+        gevent.joinall()
+
+This allows us to handle all 3 tasks concurrently.
+
 Summary
 -------------
 

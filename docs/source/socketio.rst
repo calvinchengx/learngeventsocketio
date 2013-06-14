@@ -316,7 +316,7 @@ Here's an example django *chat* app layout (inside a django project):
     ├── urls.py
     └── views.py
 
-Our client-side logic resides in `chat.js`
+Our client-side logic resides in `chat.js`. This can be thought of as our client-side "controller logic on controller named /chat".  If we so desire, we can always instantiate the second or more socket(s) with different controller names.
 
 .. code:: javascript
 
@@ -391,7 +391,7 @@ The client side SocketIO library is straightforward to use:
 * **socket.on** receives 2 arguments, the *event_name* (which the server side code will emit to) as the first argument and the *event callback function* as the second argument.  When an event happens, the (callback) function gets triggered.
 * **socket.emit** also receives 2 arguments, the first being the *event_name* and the 2nd being the *message*.  **emit('<event_name>', <message>)** sends a message to the server - the python method **on_<event_name>(<message>)** is waiting for the client side **emit()** call.
 
-Here's the corresponding server-side code in our **ChatNamespace** class.
+Here's the corresponding server-side code in our **ChatNamespace** class.  This server-side controller named `/chat` corresponds to our client-side controller also named `/chat`, which means that any **on** or **emit** refers to its counterpart.
 
 .. code:: python
 
