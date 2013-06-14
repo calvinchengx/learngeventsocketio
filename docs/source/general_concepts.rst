@@ -12,6 +12,12 @@ So what's the difference, you ask?
 
 Concurrency and parallelism are distinct concepts. Concurrency is concerned with managing access to shared state from different threads, whereas parallelism is concerned with utilizing multiple processors/cores to improve the performance of a computation.
 
+What's a coroutine?
+----------------------
+
+It's a computer program that generalize subroutines to allow multiple entry points for suspending and resuming execution at certain locations.  Coroutines are suitable for implementing cooperative tasks, iterators, infinite lists and pipes.
+
+
 .. _threads-label:
 
 What is a thread?
@@ -93,11 +99,13 @@ The problem is that these platforms are always playing catch-up with new languag
 So we cannot execute in parallel with python?
 -----------------------------------------------------
 
-Actually, we can. But not using threads.
+Actually, we can. But generally not by using threads but by using processes (with one exception which allows for parallel threads!).
 
 Using the threading module on standard python (CPython interpreter), we **cannot** execute parallel CPU computation and we cannot execute parallel I/O operation because of GIL.  The threading module is *still useful* for implementing I/O concurrency (e.g. webserver implementation) but causes more harm than good for CPU-intensive operations.
 
 However, we **can** execute parallel CPU computation and parallel I/O operation in python with python's multiprocessing module, or subprocess module or a 3rd party library called parallel python - http://www.parallelpython.com/.  Each approach has its own features and limitations but note that none of them use threads to achieve parallelism.
+
+**The exception** - `cython <http://cython.org>`_ is able to support native thread parallelism through the **cython.parallel** module by releasing the GIL (http://docs.cython.org/src/userguide/parallelism.html?highlight=nogil).  The backend for executing parallel threads is OpenMP which is a feature available in the gcc compiler but not yet available in clang/llvm compiler.  It is expected that the clang/llvm compiler will support OpenMP in the near future.
 
 Advanced distributed, parallel computing with python
 ----------------------------------------------------------
