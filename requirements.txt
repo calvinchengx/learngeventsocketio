@@ -9,5 +9,5 @@ docutils==0.10
 -e git://github.com/abourget/gevent-socketio.git@aeece7038b0052ddf6b4228857e4d7a67a6242f2#egg=gevent_socketio-dev
 gevent-websocket==0.3.6
 greenlet==0.4.1
-ipython==7.16.3
+ipython==8.10.0
 wsgiref==0.1.2
